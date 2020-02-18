@@ -146,85 +146,29 @@ for ($d = 0; $d <= $#dir_list; $d++)
 
                                    if ($addl_codes[$i] =~ /y/) #item description
                                    {
-				        #Try to split the item description from the rest of the subfield data. Not really sure how to do this since there is no way of knowing what the
-                                        #item description contains but try to break on the barcode prefix (14 digits starting with 3, CVB, BC or B)
+				        # Try to split the item description from the rest of the subfield data. Not really sure how to do this since there is no way of knowing what the
+                                        # item description contains but try to break on the barcode prefix (14 digits starting with 3510101)
 				        $found_barcode = 0;
-                                        $ret = $addl_data[$i] =~ /3[0-9]{13}/; #Look for a 14 digit barcode beginning with the number 3
+                                        $ret = $addl_data[$i] =~ /3510101[0-9]{7}/; #Look for a 14 digit barcode beginning with the number 3
                                         if ($ret)
                                         {
-					     $ret = $addl_data[$i] =~ /3903/; #Look for the 3903 prefix. This is the most common BC barcode prefix.
+					     $ret = $addl_data[$i] =~ /3510101/; #Look for the 3510101 prefix. This is the most standard WLU prefix
                                              if ($ret)
                                              {
-				                  @subdata = split(/3903/, $addl_data[$i]);
+				                  @subdata = split(/3510101/, $addl_data[$i]);
 				                  $itm_desc[$no_items] = $subdata[0];
                                                   $found_barcode++;
                                              }
 
                                              if (!$found_barcode)
                                              {
-						 $ret = $addl_data[$i] =~ /3815/; #Prefix for some of the St. John's items
-                                                 if ($ret)
-                                                 {
-				                      @subdata = split(/3815/, $addl_data[$i]);
-				                      $itm_desc[$no_items] = $subdata[0];
-                                                      $found_barcode++;
-                                                 }
-                                             }
-
-                                             if (!$found_barcode)
-                                             {
-						 $ret = $addl_data[$i] =~ /3013/; #Prefix for some of the St. John's items
-                                                 if ($ret)
-                                                 {
-				                      @subdata = split(/3013/, $addl_data[$i]);
-				                      $itm_desc[$no_items] = $subdata[0];
-                                                      $found_barcode++;
-                                                 }
-                                             }
-                                     
-                                             if (!$found_barcode)
-                                             {
-                                                  #If here then have a 14 digit barcode beginning with the number 3 but don't know the prefix. 
+                                                  # If here then have a 14 digit barcode beginning with 3510101 but it's otherwise unreadable
 				                  $itm_desc[$no_items] = $addl_data[$i]; #Grab the whole string for description since can't parse out the barcode
                                                   $found_barcode++;
                                              }
                                         }
 
-                                        if (!$found_barcode)
-                                        {
-                                             $ret = $addl_data[$i] =~ /CVB/;
-                                             if ($ret)
-                                             {
-				                  @subdata = split(/CVB/, $addl_data[$i]);
-				                  $itm_desc[$no_items] = $subdata[0];
-                                                  $found_barcode++;
-                                             }
-                                        }
-
-                                        if (!$found_barcode)
-                                        {
-                                             $ret = $addl_data[$i] =~ /BC[0-9]{5}/; #Look for BC barcode
-                                             if ($ret)
-                                             {
-				                  @subdata = split(/BC/, $addl_data[$i]);
-				                  $itm_desc[$no_items] = $subdata[0];
-                                                  $found_barcode++;
-                                             }
-                                        }
-
-
-                                        if (!$found_barcode)
-                                        {
-                                             $ret = $addl_data[$i] =~ /B[0-9]{6}/;
-                                             if ($ret)
-                                             {
-				                  @subdata = split(/B/, $addl_data[$i])
-;				                  $itm_desc[$no_items] = $subdata[0];
-                                                  $found_barcode++;
-                                             }
-                                        }
-
-                                        #If here then havent' parsed out the barcode. Just send the whole string as the item description
+                                        # If here then havent' parsed out the barcode. Just send the whole string as the item description
                                         if (!$found_barcode)
                                         {
 				             $itm_desc[$no_items] = $addl_data[$i];
@@ -242,14 +186,14 @@ for ($d = 0; $d <= $#dir_list; $d++)
                                         }
                                    }
 
-                                   #Don't really need to do anything if addl_code is a x - this is a barcode. It just contributes to the item count as do item desc & process status
+                                   # Don't really need to do anything if addl_code is a x - this is a barcode. It just contributes to the item count as do item desc & process status
                                    $no_items++;
                               }
 
                               $i++;
 	                 }
 
-                         #Loop through the tags and grab the OCLC number, ISSN's and check to see if government document
+                         # Loop through the tags and grab the OCLC number, ISSN's and check to see if government document
                          for ($j = 0; $j < $i; $j++)
                          {
                               #Get OCLC number
