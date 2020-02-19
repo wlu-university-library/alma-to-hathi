@@ -146,46 +146,44 @@ sub procRecord {
      foreach my $datafld (@datafields) {
           my $tag = $datafld->{'att'}->{'tag'};
 
-          my @codes, @data;
+          my %subs;
           my @subfields = $datafld->children('subfield');
           foreach my $subfld (@subfields) {
-               push @codes, $subfld->{'att'}->{'code'};
-               push @data, $subfld->text;
+               $subs{$subfld->{'att'}->{'code'}} = $subfld->text};
           }
 
           if ($tag eq '901') {                                   # Grab necessary item info
                $itm_cond[$no_items] = 'CH';                      # Assume item is not lost or missing
 
-               @y = grep(/y/, @codes);
-               if (@y) {                          # item description
+               if (exists $subs{'y'}) {                          # item description
                     # Try to split the item description from the rest of the subfield data. Not really sure how to do this since there is no way of knowing what the
                     # item description contains but try to break on the barcode prefix (14 digits starting with 3510101)
                     $found_barcode = 0;
-                    $ret = $addl_data[$i] =~ /3510101[0-9]{7}/;  # Look for a 14 digit barcode beginning with the number 3
+                    $ret = $subs{'y'} =~ /3510101[0-9]{7}/;  # Look for a 14 digit barcode beginning with the number 3
                     if ($ret) {
-                         $ret = $addl_data[$i] =~ /3510101/;     # Look for the 3510101 prefix. This is the most standard WLU prefix
+                         $ret = $subs{'y'} =~ /3510101/;     # Look for the 3510101 prefix. This is the most standard WLU prefix
                          if ($ret) {
-                              @subdata = split(/3510101/, $addl_data[$i]);
+                              @subdata = split(/3510101/, $subs{'y'});
                               $itm_desc[$no_items] = $subdata[0];
                               $found_barcode++;
                          }
 
                          if (!$found_barcode) {
                               # If here then have a 14 digit barcode beginning with 3510101 but it's otherwise unreadable
-                              $itm_desc[$no_items] = $addl_data[$i]; # Grab the whole string for description since can't parse out the barcode
+                              $itm_desc[$no_items] = $subs{'y'}; # Grab the whole string for description since can't parse out the barcode
                               $found_barcode++;
                          }
                     }
 
                     # If here then haven't parsed out the barcode. Just send the whole string as the item description
                     if (!$found_barcode) {
-                         $itm_desc[$no_items] = $addl_data[$i];
+                         $itm_desc[$no_items] = $subs{'y'};
                     }
                }
 
-               if ($addl_codes[$i] =~ 'z') {                     # process status
-                    $lost = $addl_data[$i] =~ /LOST/;
-                    $missing = $addl_data[$i] =~ /MISSING/;
+               if (exists $subs{'z'}) {                     # process status
+                    $lost = $subs{'z'} =~ /LOST/;
+                    $missing = $subs{'z'} =~ /MISSING/;
 
                     if ($lost || $missing) {
                          $itm_cond[$no_items] = 'LM';            # Set condition to Lost or Missing
