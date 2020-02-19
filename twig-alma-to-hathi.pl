@@ -10,14 +10,11 @@
 #
 # Updated 2020-02-19 (JTM):
 # Edited for Washington and Lee University Library extract and processing.
-# Fixing memory limit errors
+# Fixed memory limit errors by using XML::Twig rather than XML::XPath
 #
 
 use LWP::UserAgent;
 use POSIX;
-#use XML::XPath;
-#use XML::XPath::XMLParser;
-#use XML::Simple;
 use Data::Dumper;
 use XML::Twig;
 
@@ -28,7 +25,7 @@ $my_mon += 1;
 $my_date = sprintf("%s%02d%02d", $my_year, $my_mon, $my_day);
 
 # List of directories with files to process
-@dir_list = ("HathiMonoL");
+@dir_list = ("HathiMonoL", "HathiMonoTelford", "HathiSerialsTelford1", "HathiSerialsTelford2", "SerialsLeyburn1", "SerialsLeyburn2");
 
 # Log and output files
 $out_dir = "/opt/hathi/out/";
@@ -41,25 +38,19 @@ $out_log = $out_dir . "wlu_hathi_log.tsv";
 # Open files. If serials directory open serial file and log
 # If not open file for monographs and multi-volume monographs 
 # Open files in append mode: >>
-$ret = $dir_list[0] =~ /_ser/;
-if ($ret) {
-     $ret = open(OUT_SER, ">>$out_ser");
-     if ($ret < 1) {
-          die ("Cannot open file $out_ser");
-     }
-     $serial_flg = 1;
-} else {
-     $serial_flg = 0;
+$ret = open(OUT_SER, ">>$out_ser");
+if ($ret < 1) {
+     die ("Cannot open file $out_ser");
+}
 
-     $ret = open(OUT_MONO, ">>$out_mono");
-     if ($ret < 1) {
-          die ("Cannot open file $out_mono");
-     }
+$ret = open(OUT_MONO, ">>$out_mono");
+if ($ret < 1) {
+     die ("Cannot open file $out_mono");
+}
 
-     $ret = open(OUT_MULTI, ">>$out_multi");
-     if ($ret < 1) {
-          die ("Cannot open file $out_multi");
-     }
+$ret = open(OUT_MULTI, ">>$out_multi");
+if ($ret < 1) {
+     die ("Cannot open file $out_multi");
 }
 
 
@@ -78,6 +69,11 @@ $rec_out = $rec_rej = 0;
 
 for ($d = 0; $d <= $#dir_list; $d++) {
      $path_xml = sprintf("%s%s%s", "/opt/hathi/alma/", $dir_list[$d], "/xml");
+     if ($dir_list[$d] =~ /Serials/) {
+          $serial_flg = 1;
+     } else {
+          $serial_flg = 0;
+     }
 
      undef @file_list;
      
