@@ -18,22 +18,23 @@ use POSIX;
 use Data::Dumper;
 use XML::Twig;
 
-($my_day, $my_mon, $my_year) = (localtime) [3,4,5];
-$pt_day = sprintf("%02d", $my_day);
-$my_year += 1900;
-$my_mon += 1;
-$my_date = sprintf("%s%02d%02d", $my_year, $my_mon, $my_day);
-
 # List of directories with files to process
 @dir_list = ("HathiMonoL", "HathiMonoTelford", "HathiSerialsTelford1", "HathiSerialsTelford2", "SerialsLeyburn1", "SerialsLeyburn2");
 
+# What string in the directory name list above indicates files with serials?
+$serIndicator = "Serials";
+
+# Barcode prefix
+$barcodePrefix = "3510101";
+
 # Log and output files
-$out_dir = "/opt/hathi/out/";
-$out_mono = $out_dir . "wlu_hathi_mono.tsv";
-$out_multi = $out_dir . "wlu_hathi_multi.tsv";
-$out_ser = $out_dir . "wlu_hathi_serials.tsv";
-$out_rej = $out_dir . "wlu_hathi_rejected.tsv";
-$out_log = $out_dir . "wlu_hathi_log.tsv";
+$out_dir = "/opt/hathi/out/";                     # directory where output files will be saved
+$out_prefix = "wlu"                               # short initials for institution
+$out_mono = $out_dir . $out_prefix . "_hathi_mono.tsv";
+$out_multi = $out_dir . $out_prefix . "_hathi_multi.tsv";
+$out_ser = $out_dir . $out_prefix . "_hathi_serials.tsv";
+$out_rej = $out_dir . $out_prefix . "_hathi_rejected.tsv";
+$out_log = $out_dir . $out_prefix . "_hathi_log.tsv";
 
 # Open files. If serials directory open serial file and log
 # If not open file for monographs and multi-volume monographs 
@@ -52,7 +53,6 @@ $ret = open(OUT_MULTI, ">>$out_multi");
 if ($ret < 1) {
      die ("Cannot open file $out_multi");
 }
-
 
 # Open log file to keep count of rejected records (either no OCLC # or no MMS ID)
 $ret = open(OUT_LOG, ">>$out_log");
