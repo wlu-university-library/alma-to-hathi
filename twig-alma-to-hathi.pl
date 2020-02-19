@@ -192,25 +192,16 @@ sub procRecord {
 
                # Don't really need to do anything if addl_code is a x - this is a barcode. It just contributes to the item count as do item desc & process status
                $no_items++;
-          }
-
-          $i++;
-     }
-
-     # Loop through the tags and grab the OCLC number, ISSN's and check to see if government document
-     for ($j = 0; $j < $i; $j++) {
-          # Get OCLC number
-          if ($addl_tags[$j] eq '035') {
-               $ret = $addl_data[$j] =~ /OCoLC/;
+          } elsif ($tag eq '035') {
+               # Get OCLC number
+               $ret = $subs{'a'} =~ /OCoLC/;
                if ($ret) {
-                    $oclc_no = $addl_data[$j];
+                    $oclc_no = $subs{'a'};
                     $oclc_len = length($oclc_no);
                }
-          }
-
-          # Is this a journal/issue/serials?
-          if ($addl_tags[$j] eq '022') {
-               $issn = $addl_data[$j];
+          } elsif ($tag eq '022') {
+               # Is this a journal/issue/serials?
+               $issn = $subs{'a'};
                $issn_len = length($issn);
                if ($issn_len >= 9) {
                     $no_issns = $issn_len / 9;
@@ -238,15 +229,14 @@ sub procRecord {
                          $issn_len = length($issn);
                     }
                }
-          }
-
-          # Check for government document by presence of 074 tag
-          if ($addl_tags[$j] eq '074') {
+          } elsif ($tag eq '074') {
+               # Check for government document by presence of 074 tag
                $gov_doc = 1;
           }
      }
 
-     if ($oclc_len && $mms_id) {                                 # Both are required fields. If either one is missing skip this entry.
+     if ($oclc_len && $mms_id) {                                 
+          # Both are required fields. If either one is missing skip this entry.
           # If here have an MMS ID and OCLC # and no items then just have a bib and holding record in Alma. Still want to send it.
           # This is always the case for serials since we only count them at the title level.
                if (!$no_items) {
