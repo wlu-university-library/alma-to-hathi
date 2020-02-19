@@ -260,11 +260,10 @@ for ($d = 0; $d <= $#dir_list; $d++) {
                                         $rec_out++;
                                    }
                               }
-                         } else {                                               # Record rejected
-                              $line_out = sprintf("%s%s%s%s%s%s%s%s%s", $oclc_no, "\t", $mms_id, "\t", "\t", "\t", "\t", "\t", $gov_doc);
-                              print OUT_REJ ("$line_out\n");
-			               $rec_rej++;
-                         }
+                    } else {                                               # Record rejected
+                         $line_out = sprintf("%s%s%s%s%s%s%s%s%s", $oclc_no, "\t", $mms_id, "\t", "\t", "\t", "\t", "\t", $gov_doc);
+                         print OUT_REJ ("$line_out\n");
+                         $rec_rej++;
                     }
                }
           }
