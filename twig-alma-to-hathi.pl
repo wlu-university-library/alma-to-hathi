@@ -15,10 +15,11 @@
 
 use LWP::UserAgent;
 use POSIX;
-use XML::XPath;
-use XML::XPath::XMLParser;
-use XML::Simple;
+#use XML::XPath;
+#use XML::XPath::XMLParser;
+#use XML::Simple;
 use Data::Dumper;
+use XML::Twig;
 
 ($my_day, $my_mon, $my_year) = (localtime) [3,4,5];
 $pt_day = sprintf("%02d", $my_day);
@@ -107,23 +108,20 @@ for ($d = 0; $d <= $#dir_list; $d++)
                $xfile = sprintf("%s%s%s", $path_xml, "/", $filenm);
 
                #Open XPATH to data
-               my $xp = XML::XPath->new(filename=>$xfile);
+               my $xp = XML::Twig->new ( twig_handlers => { record => \&procRecord } );
+	       $xp->parsefile($xfile);
 
-               if ($xp) 
-               {
+               sub procRecord {
                     $line_out = sprintf("%s%s", "Processing file: ", $xfile);
                     print OUT_LOG ("$line_out\n");
                
-                    $nodeset = $xp->find('/collection/record');
-                    foreach my $node ($nodeset->get_nodelist) 
-                    {
-		         $mms_id = "";
-                         $i = $no_items = $lost = $missing = 0;
-                         undef @addl_tags;
-                         undef @addl_data;
-                         undef @addl_codes;
-                         undef @itm_cond;
-                         undef @itm_desc;
+		    $mms_id = "";
+                    $i = $no_items = $lost = $missing = 0;
+                    undef @addl_tags;
+                    undef @addl_data;
+                    undef @addl_codes;
+                    undef @itm_cond;
+                    undef @itm_desc;
 
                          #Grab all controlfields
                          foreach my $ctlfld ($node->findnodes('./controlfield'))

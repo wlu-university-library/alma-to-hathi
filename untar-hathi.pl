@@ -8,8 +8,8 @@
 # Margaret Briand Wolfe, December 17, 2014
 #
 
-$path_lib = "/opt/hathi/alma";
-$path_xml = "/opt/hathi/leyburn/xml/.";
+$path_lib = "/opt/hathi/alma/HathiMonoL";
+$path_xml = "/opt/hathi/alma/HathiMonoL/xml";
 $path_perl = "/opt/hathi";
 
 use Archive::Tar;
@@ -20,7 +20,7 @@ use Getopt::Std;
 my $tar_inst = Archive::Tar->new();
 
 #Untar the files containing the .XML files exported from Alma
-opendir(DIR_HATHI, "$path_lib");
+opendir(DIR_HATHI, $path_lib);
 for $filenm (readdir DIR_HATHI)
 {
      @is_tar = split(/\./, $filenm); 
@@ -38,8 +38,10 @@ for $filenm (readdir DIR_HATHI)
 
 closedir (DIR_HATHI);
 
+system("mkdir $path_xml");
+
 #Move all of the files that were just extracted to an xml directory off the library directory
-opendir(DIR_HATHI, "$path_perl");
+opendir(DIR_HATHI, $path_perl);
 for $filenm (readdir DIR_HATHI)
 {
      @is_xml = split(/\./, $filenm); 
