@@ -128,7 +128,7 @@ sub procRecord {
      # Grab all controlfields
      my @cntlfields = $record->children('controlfield');
      foreach my $ctlfld (@cntlfields) {
-          $ctl_data = $ctlfld->print;
+          $ctl_data = $ctlfld->text;
           $ctl_tag = $ctlfld->{'att'}->{'tag'};
 
           # If tag is 001 grab MMS ID
@@ -146,7 +146,7 @@ sub procRecord {
           my @subfields = $datafld->children('subfield');
           foreach my $subfld (@subfields) {
                $addl_codes[$i] = $subfld->{'att'}->{'code'};
-               $addl_data[$i] = $subfld->print;
+               $addl_data[$i] = $subfld->text;
           }
 
           if ($addl_tags[$i] eq '901') {                         # Grab necessary item info
