@@ -149,7 +149,7 @@ sub procRecord {
           my %subs;
           my @subfields = $datafld->children('subfield');
           foreach my $subfld (@subfields) {
-               $subs{$subfld->{'att'}->{'code'}} = $subfld->text};
+               $subs{$subfld->{'att'}->{'code'}} = $subfld->text;
           }
 
           if ($tag eq '901') {                                   # Grab necessary item info
@@ -224,7 +224,7 @@ sub procRecord {
                                         $issn = sprintf("%s%s%s", $issn, "\,", $issns[$k]);
                                    }
                               }
-                         } 
+                         }
 
                          $issn_len = length($issn);
                     }
