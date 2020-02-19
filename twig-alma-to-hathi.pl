@@ -104,7 +104,7 @@ for ($d = 0; $d <= $#dir_list; $d++) {
      closedir (DIR_HATHI);
 }
 
-$line_out = sprintf("%s%s%s%s", "Records output: ", $rec_out, "Records rejected: ", $rec_rej);
+$line_out = sprintf("%s%s%s%s", "Records output: ", $rec_out, " | Records rejected: ", $rec_rej);
 print OUT_LOG ("$line_out\n");
 
 close (OUT_MONO);
@@ -113,6 +113,8 @@ close (OUT_SER);
 close (OUT_LOG);
 close (OUT_REJ);
 exit;
+
+#---------------------------------------------------------
 
 sub procRecord {
      my ($t, $record) = @_;
@@ -143,10 +145,12 @@ sub procRecord {
      my @datafields = $record->children('datafield');
      foreach my $datafld (@datafields) {
           $addl_tags[$i] = $datafld->{'att'}->{'tag'};
+          $datafld->print;
           my @subfields = $datafld->children('subfield');
           foreach my $subfld (@subfields) {
                $addl_codes[$i] = $subfld->{'att'}->{'code'};
                $addl_data[$i] = $subfld->text;
+               $subfld->print;
           }
 
           if ($addl_tags[$i] eq '901') {                         # Grab necessary item info
