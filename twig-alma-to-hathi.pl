@@ -144,19 +144,20 @@ sub procRecord {
      # Grab all of the additional tags and corresponding data for this control field
      my @datafields = $record->children('datafield');
      foreach my $datafld (@datafields) {
-          $addl_tags[$i] = $datafld->{'att'}->{'tag'};
-          print "DATAFIELD:\t" . $datafld->print . "\n";
+          my $tag = $datafld->{'att'}->{'tag'};
+
+          my @codes, @data;
           my @subfields = $datafld->children('subfield');
           foreach my $subfld (@subfields) {
-               $addl_codes[$i] = $subfld->{'att'}->{'code'};
-               $addl_data[$i] = $subfld->text;
-               print "SUBFIELD:\t" . $subfld->print . "\n";
+               push @codes, $subfld->{'att'}->{'code'};
+               push @data, $subfld->text;
           }
 
-          if ($addl_tags[$i] eq '901') {                         # Grab necessary item info
-               $itm_cond[$no_items] = 'CH';                      #Assume item is not lost or missing
+          if ($tag eq '901') {                                   # Grab necessary item info
+               $itm_cond[$no_items] = 'CH';                      # Assume item is not lost or missing
 
-               if ($addl_codes[$i] =~ /y/) {                     # item description
+               @y = grep(/y/, @codes);
+               if (@y) {                          # item description
                     # Try to split the item description from the rest of the subfield data. Not really sure how to do this since there is no way of knowing what the
                     # item description contains but try to break on the barcode prefix (14 digits starting with 3510101)
                     $found_barcode = 0;
@@ -171,7 +172,7 @@ sub procRecord {
 
                          if (!$found_barcode) {
                               # If here then have a 14 digit barcode beginning with 3510101 but it's otherwise unreadable
-                              $itm_desc[$no_items] = $addl_data[$i]; #Grab the whole string for description since can't parse out the barcode
+                              $itm_desc[$no_items] = $addl_data[$i]; # Grab the whole string for description since can't parse out the barcode
                               $found_barcode++;
                          }
                     }
