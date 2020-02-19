@@ -145,12 +145,12 @@ sub procRecord {
      my @datafields = $record->children('datafield');
      foreach my $datafld (@datafields) {
           $addl_tags[$i] = $datafld->{'att'}->{'tag'};
-          $datafld->print;
+          print "DATAFIELD:\t$datafld\n";
           my @subfields = $datafld->children('subfield');
           foreach my $subfld (@subfields) {
                $addl_codes[$i] = $subfld->{'att'}->{'code'};
                $addl_data[$i] = $subfld->text;
-               $subfld->print;
+               print "SUBFIELD:\t$subfld\n";
           }
 
           if ($addl_tags[$i] eq '901') {                         # Grab necessary item info
