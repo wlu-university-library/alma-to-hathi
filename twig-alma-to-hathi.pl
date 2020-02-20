@@ -8,68 +8,50 @@
 # found increment the item count. If there is a description field then assume this item is part of a multi-part monograph. For the serials file print lines 
 # at the bib level and not at the item level per Hathi Trust instructions.
 #
-# Updated 2020-02-19 (JTM):
+# Updated 2020-02 (JTM):
 # Edited for Washington and Lee University Library extract and processing.
 # Fixed memory limit errors by using XML::Twig rather than XML::XPath
 #
 
-use LWP::UserAgent;
-use POSIX;
-use Data::Dumper;
+use POSIX 'strftime';
 use XML::Twig;
+use YAML::XS 'LoadFile';
+
+my $config = LoadFile('config.yaml');
+my $today = strftime '%Y%m%d', localtime;                         # get today's date for output files
 
 # List of directories with files to process
-@dir_list = ("HathiMonoL", "HathiMonoTelford", "HathiSerialsTelford1", "HathiSerialsTelford2", "SerialsLeyburn1", "SerialsLeyburn2");
+@dir_list = $config->{dir_list};
 
 # What string in the directory name list above indicates files with serials?
-$serIndicator = "Serials";
+$serIndicator = $config->{ser_indicator};
 
 # Barcode prefix
-$barcodePrefix = "3510101";
+$barcodePrefix = $config->{barcode_prefix};
+$barcodeLength = $config->{barcode_length};
+$barcodeRegex = quotemeta($barcodePrefix . "[0-9]{" . $barcodeLength - length($barcodePrefix) . "}");
 
-# Log and output files
-$out_dir = "/opt/hathi/out/";                     # directory where output files will be saved
-$out_prefix = "wlu"                               # short initials for institution
-$out_mono = $out_dir . $out_prefix . "_hathi_mono.tsv";
-$out_multi = $out_dir . $out_prefix . "_hathi_multi.tsv";
-$out_ser = $out_dir . $out_prefix . "_hathi_serials.tsv";
-$out_rej = $out_dir . $out_prefix . "_hathi_rejected.tsv";
-$out_log = $out_dir . $out_prefix . "_hathi_log.tsv";
+# Setup output files
+$out_dir = $config->{out_dir};                                     # directory where output files will be saved
+$out_prefix = $config->{out_prefix};                               # short initials for institution
+$out_mono = $out_dir . "/" . $out_prefix . "_hathi_mono-$today.tsv";
+$out_multi = $out_dir . "/" . $out_prefix . "_hathi_multi-$today.tsv";
+$out_ser = $out_dir . "/" . $out_prefix . "_hathi_serials-$today.tsv";
+$out_rej = $out_dir . "/" . $out_prefix . "_hathi_rejected-$today.tsv";
+$out_log = $out_dir . "/" . $out_prefix . "_hathi_log-$today.tsv";
 
-# Open files. If serials directory open serial file and log
-# If not open file for monographs and multi-volume monographs 
-# Open files in append mode: >>
-$ret = open(OUT_SER, ">>$out_ser");
-if ($ret < 1) {
-     die ("Cannot open file $out_ser");
-}
-
-$ret = open(OUT_MONO, ">>$out_mono");
-if ($ret < 1) {
-     die ("Cannot open file $out_mono");
-}
-
-$ret = open(OUT_MULTI, ">>$out_multi");
-if ($ret < 1) {
-     die ("Cannot open file $out_multi");
-}
-
-# Open log file to keep count of rejected records (either no OCLC # or no MMS ID)
-$ret = open(OUT_LOG, ">>$out_log");
-if ($ret < 1) {
-     die ("Cannot open file $out_log");
-}
-
-$ret = open(OUT_REJ, ">>$out_rej");
-if ($ret < 1) {
-     die ("Cannot open file $out_rej");
-}
+# Open all files in append mode: >>
+open(OUT_SER, ">>$out_ser")        || die ("Cannot open file $out_ser");
+open(OUT_MONO, ">>$out_mono")      || die ("Cannot open file $out_mono");
+open(OUT_MULTI, ">>$out_multi")    || die ("Cannot open file $out_multi");
+open(OUT_LOG, ">>$out_log")        || die ("Cannot open file $out_log");
+open(OUT_REJ, ">>$out_rej")        || die ("Cannot open file $out_rej");
 
 $rec_out = $rec_rej = 0;
 
 for ($d = 0; $d <= $#dir_list; $d++) {
-     $path_xml = sprintf("%s%s%s", "/opt/hathi/alma/", $dir_list[$d], "/xml");
-     if ($dir_list[$d] =~ /Serials/) {
+     $path_xml = sprintf("%s%s%s", $config->{path_xml}, $dir_list[$d]);
+     if ($dir_list[$d] =~ /\Q$serIndicator/) {
           $serial_flg = 1;
      } else {
           $serial_flg = 0;
@@ -92,7 +74,7 @@ for ($d = 0; $d <= $#dir_list; $d++) {
                $line_out = sprintf("%s%s", "Processing file: ", $xfile);
                print OUT_LOG ("$line_out\n");
 
-               # Open XML::Twig to data
+               # Read data record by record from XML files -> call sub procRecord for each
                my $xp = XML::Twig->new ( twig_handlers => { record => \&procRecord } );
 	          $xp->parsefile($xfile);
           }
@@ -113,13 +95,10 @@ exit;
 #---------------------------------------------------------
 
 sub procRecord {
-     my ($t, $record) = @_;
+     my ($xp, $record) = @_;
 
      $mms_id = "";
-     $i = $no_items = $lost = $missing = 0;
-     undef @addl_tags;
-     undef @addl_data;
-     undef @addl_codes;
+     $no_items = $lost = $missing = 0;
      undef @itm_cond;
      undef @itm_desc;
 
@@ -134,7 +113,7 @@ sub procRecord {
                $mms_id = $ctl_data;
           }
      }
-     $i = $oclc_len = $issn_len = $desc_len = $gov_doc = 0;
+     $oclc_len = $issn_len = $desc_len = $gov_doc = 0;
      $oclc_no = $issn = $desc = "";
 
      # Grab all of the additional tags and corresponding data for this control field
@@ -142,6 +121,7 @@ sub procRecord {
      foreach my $datafld (@datafields) {
           my $tag = $datafld->{'att'}->{'tag'};
 
+          # create hash to store subfield codes (keys) with tag content (values)
           my %subs;
           my @subfields = $datafld->children('subfield');
           foreach my $subfld (@subfields) {
@@ -152,20 +132,19 @@ sub procRecord {
                $itm_cond[$no_items] = 'CH';                      # Assume item is not lost or missing
 
                if (exists $subs{'y'}) {                          # item description
-                    # Try to split the item description from the rest of the subfield data. Not really sure how to do this since there is no way of knowing what the
-                    # item description contains but try to break on the barcode prefix (14 digits starting with 3510101)
+                    # Try to split the item description from the rest of the subfield data. Not really sure how to do this since there is no way of knowing what the item description contains but try to break on the barcode prefix
                     $found_barcode = 0;
-                    $ret = $subs{'y'} =~ /3510101[0-9]{7}/;  # Look for a 14 digit barcode beginning with the number 3
+                    $ret = $subs{'y'} =~ /\Q$barcodeRegex/;           # Look for barcode beginning with the prefix of a the specified barcode length
                     if ($ret) {
-                         $ret = $subs{'y'} =~ /3510101/;     # Look for the 3510101 prefix. This is the most standard WLU prefix
+                         $ret = $subs{'y'} =~ /\Q$barcodePrefix/;     # Look for just the barcode prefix
                          if ($ret) {
-                              @subdata = split(/3510101/, $subs{'y'});
+                              @subdata = split(/\Q$barcodePrefix/, $subs{'y'});
                               $itm_desc[$no_items] = $subdata[0];
                               $found_barcode++;
                          }
 
                          if (!$found_barcode) {
-                              # If here then have a 14 digit barcode beginning with 3510101 but it's otherwise unreadable
+                              # If here, then have a proper length barcode but it's otherwise unreadable
                               $itm_desc[$no_items] = $subs{'y'}; # Grab the whole string for description since can't parse out the barcode
                               $found_barcode++;
                          }

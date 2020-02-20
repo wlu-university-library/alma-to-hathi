@@ -6,20 +6,23 @@
 # Move them to xml directory off of the library's directory.
 # Margaret Briand Wolfe, December 17, 2014
 #
-# Updated 2020-02-19 (JTM)
+# Updated 2020-02 (JTM)
 # Edited for Washington and Lee University Library extract and process.
 #
 
 use Archive::Tar;
 use Getopt::Std;
+use YAML::XS 'LoadFile';
+
+my $config = LoadFile('config.yaml');
 
 # List of directories with files to process
-my @dir_list = ("HathiMonoL", "HathiMonoTelford", "HathiSerialsTelford1", "HathiSerialsTelford2", "SerialsLeyburn1", "SerialsLeyburn2");
+my @dir_list = $config->{dir_list};
 
 foreach my $dir (@dir_list) {
-     my $path_lib = "/opt/hathi/alma/$dir";
-     my $path_xml = "/opt/hathi/alma/$dir/xml";
-     my $path_perl = "/opt/hathi";
+     my $path_lib = $config->{path_lib} . "/" . $dir;
+     my $path_xml = $config->{path_xml} . "/" . $dir;
+     my $path_perl = $config->{path_perl};
 
      my $tar_inst = Archive::Tar->new();
 
@@ -29,11 +32,11 @@ foreach my $dir (@dir_list) {
           my @is_tar = split(/\./, $filenm); 
           my $no_parts = @is_tar;
           if ($no_parts > 1 && $is_tar[$no_parts - 1] eq 'gz') {
-          my $tar_fn = sprintf("%s%s%s", $path_lib, "/", $filenm);
-          # This will throw a bunch of errors but the file will untar
-          $tar_inst->read($tar_fn);
-          # Extract .xml file to directory from which perl script is run
-          $tar_inst->extract();
+               my $tar_fn = sprintf("%s%s%s", $path_lib, "/", $filenm);
+               # This will throw a bunch of errors but the file will untar
+               $tar_inst->read($tar_fn);
+               # Extract .xml file to directory from which perl script is run
+               $tar_inst->extract();
           }
      }
 
