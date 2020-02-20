@@ -247,5 +247,5 @@ sub procRecord {
           $rec_rej++;
      }
 
-     $record->flush;
+     $record->purge;
 }
