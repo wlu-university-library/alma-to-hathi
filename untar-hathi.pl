@@ -44,7 +44,7 @@ foreach my $dir (@dir_list) {
 
      closedir (DIR_HATHI);
 
-     my $xmldir = $path_xml . "/" . $dir
+     my $xmldir = $path_xml . "/" . $dir;
      system("mkdir -p $xmldir");
 
      # Move all of the files that were just extracted to an xml directory off the library directory
