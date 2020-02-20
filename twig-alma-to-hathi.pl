@@ -21,7 +21,7 @@ my $config = LoadFile('config.yaml');
 my $today = strftime '%Y%m%d', localtime;                         # get today's date for output files
 
 # List of directories with files to process
-@dir_list = $config->{dir_list};
+@dir_list = @{$config->{dir_list}};
 
 # What string in the directory name list above indicates files with serials?
 $serIndicator = $config->{ser_indicator};
