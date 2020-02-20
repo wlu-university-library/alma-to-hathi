@@ -19,7 +19,7 @@ my $config = LoadFile('config.yaml');
 # List of directories with files to process
 my @dir_list = $config->{dir_list};
 
-foreach my $dir (@dir_list) {
+foreach my [$dir] (@dir_list) {
      my $path_lib = $config->{path_lib} . "/" . $dir;
      my $path_xml = $config->{path_xml} . "/" . $dir;
      my $path_perl = $config->{path_perl};
@@ -42,7 +42,7 @@ foreach my $dir (@dir_list) {
 
      closedir (DIR_HATHI);
 
-     my $xmldir = $path_xml . "/" . $dir;
+     my $xmldir = $path_xml . "/" . $dir
      system("mkdir -p $xmldir");
 
      # Move all of the files that were just extracted to an xml directory off the library directory
