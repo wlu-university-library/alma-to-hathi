@@ -13,13 +13,11 @@
 use Archive::Tar;
 use Getopt::Std;
 use YAML::XS 'LoadFile';
-use Data::Dumper;
 
 my $config = LoadFile('config.yaml');
 
 # List of directories with files to process
-my @dir_list = $config->{dir_list};
-print Dumper(@dir_list);
+my @dir_list = @{$config->{dir_list}};
 
 foreach my $dir (@dir_list) {
      my $path_lib = $config->{path_lib} . "/" . $dir;
