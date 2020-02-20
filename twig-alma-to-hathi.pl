@@ -49,9 +49,9 @@ open(OUT_REJ, ">>$out_rej")        || die ("Cannot open file $out_rej");
 
 $rec_out = $rec_rej = 0;
 
-for ($d = 0; $d <= $#dir_list; $d++) {
-     $path_xml = sprintf("%s%s%s", $config->{path_xml}, $dir_list[$d]);
-     if ($dir_list[$d] =~ /\Q$serIndicator/) {
+foreach my $dir (@dir_list) {
+     $path_xml = $config->{path_xml} . "/" . $dir;
+     if ($dir =~ /\Q$serIndicator/) {
           $serial_flg = 1;
      } else {
           $serial_flg = 0;
