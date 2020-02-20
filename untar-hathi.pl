@@ -42,7 +42,8 @@ foreach my $dir (@dir_list) {
 
      closedir (DIR_HATHI);
 
-     system("mkdir -p $path_xml");
+     my $xmldir = $path_xml . "/" . $dir;
+     system("mkdir -p $xmldir");
 
      # Move all of the files that were just extracted to an xml directory off the library directory
      opendir(DIR_HATHI, $path_perl);
@@ -54,7 +55,7 @@ foreach my $dir (@dir_list) {
                system ("chmod 444 $filenm");
                # Move file from perl directory to library's xml directory
                my $filemv = sprintf("%s%s%s", $path_perl, "/", $filenm);
-               system ("mv $filenm $path_xml");
+               system ("mv $filemv $xmldir");
           }
      }
 
