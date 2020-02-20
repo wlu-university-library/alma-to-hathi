@@ -20,19 +20,19 @@ my $config = LoadFile('config.yaml');
 my @dir_list = @{$config->{dir_list}};
 
 foreach my $dir (@dir_list) {
-     my $path_lib = $config->{path_lib} . "/" . $dir;
-     my $path_xml = $config->{path_xml} . "/" . $dir;
-     my $path_perl = $config->{path_perl};
+     my $pathlib = $config->{path_lib} . "/" . $dir;
+     my $pathxml = $config->{path_xml} . "/" . $dir;
+     my $pathperl = $config->{path_perl};
 
      my $tar_inst = Archive::Tar->new();
 
      # Untar the files containing the .XML files exported from Alma
-     opendir(DIR_HATHI, $path_lib);
+     opendir(DIR_HATHI, $pathlib);
      for my $filenm (readdir DIR_HATHI) {
           my @is_tar = split(/\./, $filenm); 
           my $no_parts = @is_tar;
           if ($no_parts > 1 && $is_tar[$no_parts - 1] eq 'gz') {
-               my $tar_fn = sprintf("%s%s%s", $path_lib, "/", $filenm);
+               my $tar_fn = sprintf("%s%s%s", $pathlib, "/", $filenm);
                # This will throw a bunch of errors but the file will untar
                $tar_inst->read($tar_fn);
                # Extract .xml file to directory from which perl script is run
@@ -42,11 +42,10 @@ foreach my $dir (@dir_list) {
 
      closedir (DIR_HATHI);
 
-     my $xmldir = $path_xml . "/" . $dir;
-     system("mkdir -p $xmldir");
+     system("mkdir -p $pathxml");
 
      # Move all of the files that were just extracted to an xml directory off the library directory
-     opendir(DIR_HATHI, $path_perl);
+     opendir(DIR_HATHI, $pathperl);
      for my $filenm (readdir DIR_HATHI) {
           my @is_xml = split(/\./, $filenm); 
           my $no_parts = @is_xml;
@@ -54,8 +53,8 @@ foreach my $dir (@dir_list) {
                # chmod on the file to make it readable and move it to xml file off of the lib dir      
                system ("chmod 444 $filenm");
                # Move file from perl directory to library's xml directory
-               my $filemv = sprintf("%s%s%s", $path_perl, "/", $filenm);
-               system ("mv $filemv $xmldir");
+               my $filemv = sprintf("%s%s%s", $pathperl, "/", $filenm);
+               system ("mv $filemv $pathxml");
           }
      }
 
