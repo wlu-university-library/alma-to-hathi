@@ -246,4 +246,6 @@ sub procRecord {
           print OUT_REJ ("$line_out\n");
           $rec_rej++;
      }
+
+     $record->flush;
 }
