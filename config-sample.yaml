@@ -1,0 +1,36 @@
+---
+#####
+# 1. Rename/copy this file to "config.yaml"
+# 2. Change all of the variables below to match your environment
+# 3. Do not remove any of the variables
+#####
+
+# dir_list ==> YAML list of directories with files to process
+dir_list:
+  - dir1
+  - dir2
+  - etc
+
+# path_lib ==> Path ending just above where the dir_list files are located
+path_lib: /path/to/dir_list/files
+
+# path_xml ==> Path to where to store the untarred/unzipped XML files
+path_xml: /path/to/xml/files
+
+# path_perl ==> Path to where the Perl scripts are stored
+path_perl: /path/to/perl/scripts
+
+# ser_indicator ==> What string in dir_list above is common to all files with serials? 
+ser_indicator: string
+
+# barcode_prefix ==> String containing the common prefix for all barcodes
+barcode_prefix: string
+
+# barcode_length ==> Length of all barcodes
+barcode_length: number
+
+# out_dir ==> Path to where your output files should be stored
+out_dir: /path/to/output/files
+
+# out_prefix ==> Short string of initials representing your institution
+out_prefix: xyu
